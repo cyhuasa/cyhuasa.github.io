@@ -204,36 +204,80 @@
   /* the two words not being pointed at step back */
   .hero-word.is-off { color: var(--ink-soft); }
 
-  .fig-grp { cursor: pointer; }
+  /* The composition keeps the old 320 × 344 drawing grid, so every
+     figure is positioned as a percentage of that box and the three
+     shapes stay in the same places they were drawn in.            */
+  .hero-comp { position: relative; width: 100%; aspect-ratio: 320 / 344; }
 
-  .fig-grp {
+  .figbox { position: absolute; }
+  .figbox-sqr { left: 3.75%;  top: 4.07%;  width: 43.75%; height: 40.70%; }
+  .figbox-cir { left: 53.75%; top: 3.49%;  width: 45.00%; height: 41.86%; }
+  .figbox-tri { left: 6.25%;  top: 55.23%; width: 87.50%; height: 40.12%; }
+
+  .fighit {
+    position: absolute;
+    inset: 0;
+    cursor: pointer;
+    perspective: 1000px;
     transition: transform 240ms cubic-bezier(.16,1,.3,1), opacity 180ms linear;
   }
-  .fig-grp .fig-shadow { opacity: 0; transition: opacity 180ms linear; }
 
-  .fig-tri { transform-origin: 160px 282px; }
-  .fig-cir { transform-origin: 244px 84px; }
-  .fig-sqr { transform-origin: 82px 84px; }
+  /* the card that turns over */
+  .flip {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 560ms cubic-bezier(.22,1,.36,1);
+  }
+  .face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+  .face-back { transform: rotateY(180deg); }
 
-  /* dim everything while one word is held … */
-  svg[data-active] .fig-grp { opacity: 0.22; }
+  /* geometry lives on an inner box so the faces keep their backface rule */
+  .shape { position: absolute; inset: 0; overflow: hidden; }
+  .shape img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
-  /* … then bring the matching figure forward */
-  svg[data-active="tri"] .fig-tri,
-  svg[data-active="cir"] .fig-cir,
-  svg[data-active="sqr"] .fig-sqr { opacity: 1; }
+  .figbox-sqr .shape { border: 4px solid var(--line); }
+  .figbox-cir .shape { border: 4px solid var(--line); border-radius: 50%; }
+  .figbox-tri .shape { clip-path: polygon(50% 0, 100% 100%, 0 100%); }
 
-  svg[data-active="tri"] .fig-tri { transform: scale(1.1) rotate(-6deg); }
-  svg[data-active="cir"] .fig-cir { transform: scale(1.16); }
-  svg[data-active="sqr"] .fig-sqr { transform: scale(1.12) rotate(12deg); }
+  .figbox-sqr .face-front .shape { background: var(--yellow); }
+  .figbox-cir .face-front .shape { background: var(--blue); }
+  .figbox-tri .face-front .shape { background: var(--red); }
 
-  svg[data-active="tri"] .fig-tri .fig-shadow,
-  svg[data-active="cir"] .fig-cir .fig-shadow,
-  svg[data-active="sqr"] .fig-sqr .fig-shadow { opacity: 1; }
+  /* the triangle can't take a CSS border, so its edge is drawn */
+  .tri-edge {
+    position: absolute;
+    inset: 0;
+    overflow: visible;
+    pointer-events: none;
+  }
+
+  /* dim every figure while one is held … */
+  .hero-comp[data-active] .fighit { opacity: 0.22; }
+
+  /* … then turn the matching one over and bring it forward */
+  .hero-comp[data-active="sqr"] .figbox-sqr,
+  .hero-comp[data-active="cir"] .figbox-cir,
+  .hero-comp[data-active="tri"] .figbox-tri { z-index: 3; }
+
+  .hero-comp[data-active="sqr"] .figbox-sqr .fighit,
+  .hero-comp[data-active="cir"] .figbox-cir .fighit,
+  .hero-comp[data-active="tri"] .figbox-tri .fighit { opacity: 1; transform: scale(1.06); }
+
+  .hero-comp[data-active="sqr"] .figbox-sqr .flip,
+  .hero-comp[data-active="cir"] .figbox-cir .flip,
+  .hero-comp[data-active="tri"] .figbox-tri .flip { transform: rotateY(180deg); }
 
   @media (prefers-reduced-motion: reduce) {
     .bh-card:hover { transform: none; }
-    svg[data-active] .fig-grp { transform: none !important; }
+    .flip { transition: none; }
+    .hero-comp[data-active] .fighit { transform: none !important; }
   }
 
   .clamp-5 {
@@ -599,45 +643,60 @@ function TopBar({ active }) {
    HERO
    ============================================================ */
 
+/* Each figure turns over to show the photograph behind it. */
+const FIGURES = [
+  {
+    key: "sqr", entrance: "g-sq",
+    photo: "photo-observer.jpg",
+    alt: "Asa at the Bourse de Commerce, Paris",
+  },
+  {
+    key: "cir", entrance: "g-ci",
+    photo: "photo-synthesizer.jpg",
+    alt: "Asa in Singapore Airlines uniform on the apron at sunrise",
+  },
+  {
+    key: "tri", entrance: "g-tr",
+    photo: "photo-initiator.jpg",
+    alt: "Asa presenting the Grab Holdings acquisition appraisal",
+  },
+];
+
 function HeroComposition({ active, onHover }) {
-  /* hovering a figure reports back the same key a word would */
-  const bind = (fig) => ({
-    onMouseEnter: () => onHover(fig),
-    onMouseLeave: () => onHover(null),
-  });
-
   return (
-    <svg
-      viewBox="0 0 320 344"
-      className="w-full h-auto overflow-visible"
-      data-active={active || undefined}
-      role="img"
-      aria-label="Bauhaus composition: a yellow square for Observer, a blue circle for Synthesizer, a red triangle for Initiator"
-    >
-      {/* Observer — yellow square */}
-      <g className="g-sq">
-        <g className="fig-grp fig-sqr" {...bind("sqr")}>
-          <rect className="fig-shadow" x="24" y="26" width="140" height="140" fill="var(--line)" />
-          <rect x="12" y="14" width="140" height="140" fill="var(--yellow)" stroke="var(--line)" strokeWidth="4" />
-        </g>
-      </g>
-
-      {/* Synthesizer — blue circle */}
-      <g className="g-ci">
-        <g className="fig-grp fig-cir" {...bind("cir")}>
-          <circle className="fig-shadow" cx="256" cy="96" r="72" fill="var(--line)" />
-          <circle cx="244" cy="84" r="72" fill="var(--blue)" stroke="var(--line)" strokeWidth="4" />
-        </g>
-      </g>
-
-      {/* Initiator — red triangle */}
-      <g className="g-tr">
-        <g className="fig-grp fig-tri" {...bind("tri")}>
-          <path className="fig-shadow" d="M 32 340 L 172 202 L 312 340 Z" fill="var(--line)" />
-          <path d="M 20 328 L 160 190 L 300 328 Z" fill="var(--red)" stroke="var(--line)" strokeWidth="4" />
-        </g>
-      </g>
-    </svg>
+    <div className="hero-comp" data-active={active || undefined}>
+      {FIGURES.map((f) => (
+        <div key={f.key} className={"figbox figbox-" + f.key + " " + f.entrance}>
+          <div
+            className="fighit"
+            onMouseEnter={() => onHover(f.key)}
+            onMouseLeave={() => onHover(null)}
+            onClick={() => onHover(active === f.key ? null : f.key)}
+          >
+            <div className="flip">
+              <div className="face face-front">
+                <div className="shape" />
+                {f.key === "tri" && (
+                  <svg className="tri-edge" viewBox="0 0 280 138" preserveAspectRatio="none" aria-hidden="true">
+                    <polygon points="140,0 280,138 0,138" fill="none" stroke="var(--line)" strokeWidth="4" vectorEffect="non-scaling-stroke" />
+                  </svg>
+                )}
+              </div>
+              <div className="face face-back">
+                <div className="shape">
+                  <img src={f.photo} alt={f.alt} loading="lazy" />
+                </div>
+                {f.key === "tri" && (
+                  <svg className="tri-edge" viewBox="0 0 280 138" preserveAspectRatio="none" aria-hidden="true">
+                    <polygon points="140,0 280,138 0,138" fill="none" stroke="var(--line)" strokeWidth="4" vectorEffect="non-scaling-stroke" />
+                  </svg>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -697,6 +756,7 @@ function Hero() {
                   onMouseLeave={() => setActive(null)}
                   onFocus={() => setActive(t.fig)}
                   onBlur={() => setActive(null)}
+                  onClick={() => setActive(active === t.fig ? null : t.fig)}
                 >
                   {t.word}
                 </span>
