@@ -1319,16 +1319,16 @@ function Lightbox({ data, onClose }) {
   );
 }
 
-function HeroComposition({ active, onHover }) {
+function HeroComposition({ active, bind }) {
   return (
     <div className="hero-comp" data-active={active || undefined}>
       {FIGURES.map((f) => (
         <div key={f.key} className={"figbox figbox-" + f.key + " " + f.entrance}>
           <div
             className="fighit"
-            onMouseEnter={() => onHover(f.key)}
-            onMouseLeave={() => onHover(null)}
-            onClick={() => onHover(active === f.key ? null : f.key)}
+            onPointerEnter={bind.enter(f.key)}
+            onPointerLeave={bind.leave}
+            onPointerDown={bind.tap(f.key)}
           >
             <div className="flip">
               <div className="face face-front">
@@ -1364,19 +1364,45 @@ const TRAITS = [
   { word: "Observer",      fig: "sqr", acc: "var(--yellow)", on: "var(--on-yellow)" },
 ];
 
-function Hero({ onPhoto }) {
+function Hero({ onPhoto, resetTick }) {
   const [note, setNote] = useState(false);
   const [active, setActive] = useState(null);
 
+  /* A touch screen fakes a mouse: one tap fires pointerenter AND a
+     click, so a plain hover+click pair opened and shut in the same
+     tap and needed a second one. So the two inputs are kept apart —
+     hover drives a mouse or pen, a tap drives touch, never both. */
+  const viaTouch = useRef(false);
+
+  const enter = (key) => (e) => {
+    if (e.pointerType === "touch") return;
+    viaTouch.current = false;
+    setActive(key);
+  };
+  const leave = (e) => {
+    if (e.pointerType === "touch") return;
+    setActive(null);
+  };
+  const tap = (key) => (e) => {
+    if (e.pointerType !== "touch") return;
+    viaTouch.current = true;
+    setActive((prev) => (prev === key ? null : key));
+  };
+
+  /* closing the full-screen photo also releases the shape */
+  useEffect(() => { if (resetTick) setActive(null); }, [resetTick]);
+
   /* Hold a shape for a beat and the photograph takes the whole screen.
-     The delay keeps a mouse crossing the hero from flashing it open. */
+     A tap opens it at once and keeps it there to be dismissed, since a
+     finger has no hover to end. */
   useEffect(() => {
     if (!active) { onPhoto(null); return; }
     const f = FIGURES.find((x) => x.key === active);
     if (!f) return;
+    const modal = viaTouch.current;
     const t = setTimeout(
-      () => onPhoto({ src: f.photo, caption: f.caption, accent: f.accent, modal: false }),
-      260
+      () => onPhoto({ src: f.photo, caption: f.caption, accent: f.accent, modal }),
+      modal ? 0 : 260
     );
     return () => clearTimeout(t);
   }, [active, onPhoto]);
@@ -1422,11 +1448,11 @@ function Hero({ onPhoto }) {
                   }
                   tabIndex="0"
                   style={{ "--acc": t.acc, "--acc-on": t.on }}
-                  onMouseEnter={() => setActive(t.fig)}
-                  onMouseLeave={() => setActive(null)}
+                  onPointerEnter={enter(t.fig)}
+                  onPointerLeave={leave}
+                  onPointerDown={tap(t.fig)}
                   onFocus={() => setActive(t.fig)}
                   onBlur={() => setActive(null)}
-                  onClick={() => setActive(active === t.fig ? null : t.fig)}
                 >
                   {t.word}
                 </span>
@@ -1485,7 +1511,7 @@ function Hero({ onPhoto }) {
           <div className="col-span-12 lg:col-span-5 flex flex-col justify-between pb-12 lg:pb-16 lg:pt-16 lg:pl-10"
                style={{ borderLeft: "none" }}>
             <div className="max-w-[380px] lg:ml-auto w-full px-2">
-              <HeroComposition active={active} onHover={setActive} />
+              <HeroComposition active={active} bind={{ enter, leave, tap }} />
             </div>
 
             <div className="mt-8 lg:ml-auto w-full max-w-[380px]">
@@ -2026,8 +2052,13 @@ function App() {
 
   const [essay, setEssay] = useState(null);
 
+  const [resetTick, setResetTick] = useState(0);
+
   const openPhoto = useCallback((d) => setPhoto(d), []);
-  const closePhoto = useCallback(() => setPhoto(null), []);
+  const closePhoto = useCallback(() => {
+    setPhoto(null);
+    setResetTick((t) => t + 1);
+  }, []);
 
   /* An essay lives at #essay-<id>, so one piece can be linked to
      directly and the back button steps out of it. */
@@ -2064,7 +2095,7 @@ function App() {
       document.body.style.overflow = "hidden";
       return () => { document.body.style.overflow = prev; };
     }
-    const dismiss = () => setPhoto(null);
+    const dismiss = (e) => { if (e.pointerType !== "touch") setPhoto(null); };
     window.addEventListener("pointerdown", dismiss);
     return () => window.removeEventListener("pointerdown", dismiss);
   }, [photo]);
@@ -2103,7 +2134,7 @@ function App() {
       <TopBar active={active} hidden={!past} />
       <main>
         <Landing />
-        <Hero onPhoto={openPhoto} />
+        <Hero onPhoto={openPhoto} resetTick={resetTick} />
         <Projects />
         <Timeline />
         <Skills />
