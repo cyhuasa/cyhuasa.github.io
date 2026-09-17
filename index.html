@@ -134,18 +134,6 @@
      they start filled). The swap is a flat colour exchange: no
      shadow, no gradient, no easing beyond a crisp 120ms.        */
 
-  .bh-chip {
-    background: transparent;
-    color: var(--ink);
-    border-color: var(--line);
-    transition: background-color 120ms linear, color 120ms linear, border-color 120ms linear;
-  }
-  .bh-chip:hover,
-  .bh-chip:focus-visible {
-    background: var(--acc);
-    color: var(--acc-on);
-    border-color: var(--acc);
-  }
 
   .bh-btn {
     background: var(--base);
@@ -162,18 +150,33 @@
   .bh-btn .bh-dot { transition: background-color 120ms linear; }
   .bh-btn:hover .bh-dot { background: var(--acc-on) !important; }
 
-  .bh-card { transition: transform 140ms ease; }
-  .bh-card:hover { transform: translateY(-4px); }
-  .bh-num {
-    background: var(--acc);
-    color: var(--acc-on);
-    transition: background-color 140ms linear, color 140ms linear;
+  /* The card is not a control, so it does not answer the pointer.
+     Only the two buttons inside it do. */
+  .bh-num { background: var(--acc); color: var(--acc-on); }
+  .bh-shape { background: var(--acc-on); }
+
+  /* Card actions: a filled primary for the document, an outlined
+     secondary for expanding the text. Both unmistakably buttons. */
+  .bh-act {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    border: 2px solid var(--line);
+    padding: 11px 14px;
+    background: transparent;
+    color: var(--ink);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    line-height: 1;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 120ms linear, color 120ms linear;
   }
-  .bh-card:hover .bh-num { background: var(--ground); color: var(--acc); }
-  .bh-shape { background: var(--acc-on); transition: background-color 140ms linear; }
-  .bh-card:hover .bh-shape { background: var(--acc); }
-  .bh-rule { transition: width 140ms ease; }
-  .bh-card:hover .bh-rule { width: 100%; }
+  .bh-act:hover,
+  .bh-act:focus-visible { background: var(--ground-deep); color: var(--ink-invert); outline: none; }
+  .bh-act-primary { background: var(--acc); color: var(--acc-on); }
 
   /* --- Hero: word ⇄ figure linkage ------------------------------
      Each trait word owns one figure. Hovering a word promotes its
@@ -276,8 +279,7 @@
   .hero-comp[data-active="tri"] .figbox-tri .flip { transform: rotateY(180deg); }
 
   @media (prefers-reduced-motion: reduce) {
-    .bh-card:hover { transform: none; }
-    .flip { transition: none; }
+      .flip { transition: none; }
     .hero-comp[data-active] .fighit { transform: none !important; }
   }
 
@@ -288,6 +290,23 @@
     color: var(--ink);
     border: 2px solid var(--line);
     cursor: default;
+  }
+
+  /* Touch: kill the 300ms tap delay and the grey flash, and stop a long
+     press on a figure from selecting text instead of opening the photo. */
+  .fighit, .cap, .iso, .bh-act, .bh-btn, .hero-word, .topbar a, .topbar button {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .fighit, .hero-word { -webkit-user-select: none; user-select: none; }
+
+  /* a finger leaves no pointer behind, so hover styles must not stick */
+  @media (hover: none) {
+    .bh-act:hover { background: transparent; color: var(--ink); }
+    .bh-act-primary:hover { background: var(--acc); color: var(--acc-on); }
+    .cap:hover .cap-body, .cap:hover .cap-note { transform: none; }
+    .iso:hover g { transform: none; }
+    .bh-btn:hover { background: var(--base); color: var(--base-on); }
   }
 
   /* --- Landing cover -------------------------------------------- */
@@ -1315,12 +1334,9 @@ function Landing() {
   );
 }
 
-function Tag({ children, accent = "var(--blue)" }) {
+function Tag({ children }) {
   return (
-    <span
-      className="bh-chip mono inline-flex items-center border-2 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] leading-none"
-      style={{ "--acc": accent, "--acc-on": ON[accent] || "var(--ink-invert)" }}
-    >
+    <span className="bw-chip mono inline-flex items-center px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] leading-none">
       {children}
     </span>
   );
@@ -1491,6 +1507,11 @@ function Lightbox({ data, onClose }) {
   const d = data || last.current;
   const modal = Boolean(data && data.modal);
 
+  /* ignore a dismissal that arrives in the same gesture that opened it */
+  const openedAt = useRef(0);
+  useEffect(() => { if (data) openedAt.current = Date.now(); }, [data]);
+  const backdropClose = () => { if (Date.now() - openedAt.current > 350) onClose(); };
+
   useEffect(() => {
     if (!modal) return;
     const onKey = (e) => { if (e.key === "Escape") onClose(); };
@@ -1504,7 +1525,7 @@ function Lightbox({ data, onClose }) {
       data-open={data ? "true" : undefined}
       data-modal={modal ? "true" : "false"}
       style={{ "--acc": (d && d.accent) || "var(--blue)" }}
-      onClick={modal ? onClose : undefined}
+      onClick={modal ? backdropClose : undefined}
       role={modal ? "dialog" : undefined}
       aria-modal={modal || undefined}
       aria-hidden={data ? undefined : "true"}
@@ -1547,7 +1568,8 @@ function HeroComposition({ active, bind }) {
             className="fighit"
             onPointerEnter={bind.enter(f.key)}
             onPointerLeave={bind.leave}
-            onPointerDown={bind.tap(f.key)}
+            onPointerDown={bind.down}
+            onClick={bind.tap(f.key)}
           >
             <div className="flip">
               <div className="face face-front">
@@ -1592,6 +1614,12 @@ function Hero({ onPhoto, resetTick }) {
      tap and needed a second one. So the two inputs are kept apart —
      hover drives a mouse or pen, a tap drives touch, never both. */
   const viaTouch = useRef(false);
+  const ptr = useRef("mouse");
+
+  /* pointerdown only records what kind of input this is; the work happens
+     on click. Opening on pointerdown meant the same tap's click landed on
+     the photo that had just appeared under the finger, and shut it again. */
+  const down = (e) => { ptr.current = e.pointerType || "mouse"; };
 
   const enter = (key) => (e) => {
     if (e.pointerType === "touch") return;
@@ -1602,8 +1630,8 @@ function Hero({ onPhoto, resetTick }) {
     if (e.pointerType === "touch") return;
     setActive(null);
   };
-  const tap = (key) => (e) => {
-    if (e.pointerType !== "touch") return;
+  const tap = (key) => () => {
+    if (ptr.current !== "touch") return;
     viaTouch.current = true;
     setActive((prev) => (prev === key ? null : key));
   };
@@ -1669,7 +1697,8 @@ function Hero({ onPhoto, resetTick }) {
                   style={{ "--acc": t.acc, "--acc-on": t.on }}
                   onPointerEnter={enter(t.fig)}
                   onPointerLeave={leave}
-                  onPointerDown={tap(t.fig)}
+                  onPointerDown={down}
+                  onClick={tap(t.fig)}
                   onFocus={() => setActive(t.fig)}
                   onBlur={() => setActive(null)}
                 >
@@ -1731,7 +1760,7 @@ function Hero({ onPhoto, resetTick }) {
           <div className="col-span-12 lg:col-span-5 flex flex-col justify-between pb-12 lg:pb-16 lg:pt-16 lg:pl-10"
                style={{ borderLeft: "none" }}>
             <div className="max-w-[380px] lg:ml-auto w-full px-2">
-              <HeroComposition active={active} bind={{ enter, leave, tap }} />
+              <HeroComposition active={active} bind={{ enter, leave, down, tap }} />
             </div>
 
             <div className="mt-8 lg:ml-auto w-full max-w-[380px]">
@@ -1790,19 +1819,11 @@ function ProjectCard({ p }) {
           {p.title}
         </h3>
 
-        <div aria-hidden="true" className="bh-rule my-4 h-[3px] w-14" style={{ background: p.accent }} />
+        <div aria-hidden="true" className="my-4 h-[3px] w-14" style={{ background: p.accent }} />
 
         <p className={"text-[14px] leading-[1.65] " + (open ? "" : "clamp-5")} style={{ color: "var(--ink-soft)" }}>
           {p.body}
         </p>
-
-        <button
-          onClick={() => setOpen((v) => !v)}
-          className="mono mt-3 self-start text-[10px] font-semibold uppercase tracking-[0.16em] underline underline-offset-4"
-          style={{ color: "var(--ink)", background: "none", border: "none", padding: 0, cursor: "pointer" }}
-        >
-          {open ? "Show less —" : "Read full +"}
-        </button>
 
         <dl className="mono mt-5 grid grid-cols-3 gap-px" style={{ background: "var(--line)", border: "2px solid var(--line)" }}>
           {p.metrics.map(([v, k]) => (
@@ -1822,24 +1843,28 @@ function ProjectCard({ p }) {
           ))}
         </dl>
 
-        {p.link && (
-          <a
-            href={p.link.href}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bh-btn mono mt-5 inline-flex items-center justify-between gap-3 border-2 px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.14em] no-underline"
-            style={{
-              "--base": "transparent", "--base-on": "var(--ink)",
-              "--acc": p.accent, "--acc-on": p.on,
-            }}
-          >
-            {p.link.label}
-            <span aria-hidden="true">→</span>
-          </a>
-        )}
+        {/* everything clickable on this card lives in one row */}
+        <div className="mono mt-5 flex flex-wrap items-stretch gap-2">
+          {p.link && (
+            <a
+              className="bh-act bh-act-primary"
+              href={p.link.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ "--acc": p.accent, "--acc-on": p.on }}
+            >
+              {p.link.label}
+              <span aria-hidden="true">↗</span>
+            </a>
+          )}
+          <button className="bh-act" onClick={() => setOpen((v) => !v)} aria-expanded={open}>
+            {open ? "Show less" : "Read full"}
+            <span aria-hidden="true">{open ? "−" : "+"}</span>
+          </button>
+        </div>
 
         <div className="mt-5 flex flex-wrap gap-1.5 pt-4" style={{ borderTop: "1px solid var(--line)" }}>
-          {p.tags.map((t) => <Tag key={t} accent={p.accent}>#{t}</Tag>)}
+          {p.tags.map((t) => <Tag key={t}>#{t}</Tag>)}
         </div>
       </div>
     </article>
