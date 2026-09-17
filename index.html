@@ -474,6 +474,75 @@
     .iso:hover g, .cap:hover .cap-body, .cap:hover .cap-note { transform: none; }
   }
 
+  /* --- Print: Ctrl/Cmd + P saves a real PDF of this page --------
+     The cover takes page one, each section starts fresh, and nothing
+     that only exists for a pointer comes along. With an essay open,
+     the page prints that essay alone.                             */
+  @media print {
+    @page { size: A4; margin: 14mm; }
+
+    :root {
+      --ground: #FFFFFF;
+      --ground-alt: #F1F0EC;
+      --ground-deep: #111111;
+      --ink: #111111;
+      --ink-soft: #4A4A46;
+      --line: #111111;
+      --ink-invert: #FFFFFF;
+    }
+
+    *, *::before, *::after {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    html, body { background: #FFFFFF; }
+
+    /* interface, not content */
+    .topbar, .lightbox, .scroll-cue { display: none !important; }
+    .reader:not([data-open="true"]) { display: none !important; }
+    .reader-bar, .reader button { display: none !important; }
+
+    /* the cover keeps page one to itself */
+    .landing {
+      min-height: auto;
+      border-bottom: none;
+      break-after: page;
+      padding-bottom: 10mm;
+    }
+    .landing-mark { width: 92mm; }
+    .cover-fade { animation: none !important; opacity: 1 !important; transform: none !important; }
+
+    /* one section per page, and never split a card or a row */
+    main > section { break-before: page; border-bottom: none !important; padding: 0 0 6mm !important; }
+    main > section#top { break-before: auto; }
+    .bh-card, .iso, .cap, .prose h3, figure { break-inside: avoid; }
+    .prose p { orphans: 3; widows: 3; }
+
+    /* hold the shapes still, front side up */
+    .fighit { opacity: 1 !important; transform: none !important; }
+    .flip { transform: none !important; }
+    .face-back { display: none; }
+    .rise, .wipe, .g-sq, .g-ci, .g-tr { animation: none !important; opacity: 1 !important; transform: none !important; }
+
+    /* the closing panel is knocked out on screen — on paper it is ink */
+    #contact { background: #FFFFFF !important; color: #111111 !important; }
+    #contact * { color: #111111 !important; border-color: #111111 !important; }
+    #contact a { background: #FFFFFF !important; }
+
+    /* with an essay open, print the essay and nothing else */
+    .reader[data-open="true"] {
+      position: static;
+      inset: auto;
+      height: auto;
+      overflow: visible;
+      opacity: 1;
+      visibility: visible;
+    }
+    body:has(.reader[data-open="true"]) main { display: none !important; }
+    .reader[data-open="true"] .prose { max-width: none; }
+  }
+
   .clamp-5 {
     display: -webkit-box;
     -webkit-line-clamp: 5;
@@ -609,21 +678,6 @@
 <p style="margin:0 0 14px">之前還會去酒局的時候覺得很有意思的是，酒品的確可以見人品，所以要認識一個人之前最好先跟他們喝幾次酒，然後問一下那個坐飛機的心理測驗，這樣大概就可以迅速地知道自己和這個人會不會合了。同事曾經說過她只需要花一頓晚餐的時間就可以知道對方靈魂的高度跟她有沒有一樣，我仔細思考了一下，靈魂的確是很重要的東西。我一直在找有靈魂有內涵的人，其實透過一頓飯的確就可以分辨得出來。有些人聊了只會覺得對方好像一個可憐的機器人一樣，有些人聊了會覺得好像生命裡出現了新香料刺激了自己的想法，所以自然的多多認識人並沒有什麼壞處。</p>
 <h4 style="font-size:16px;font-weight:700;margin:24px 0 10px">四</h4>
 <p style="margin:0 0 14px">中秋節的時候跟著親戚們一起烤肉，大家聚在透天厝一樓，旁邊就是公園，遠方可以看到家家戶戶都出來烤肉，大概晚上九點多的時候滿月就已經高掛在天空了，甚至也可以看到幾個小孩子拿著仙女棒，橘黃色的火光在他們臉上綻放，映照他們的雙眼。當下這個畫面讓我看了很久，這個氛圍和踏實感，我花了一點時間去記憶它。那時候我就知道了，這個瞬間又要從手裡慢慢流逝掉了，明年或是後年都不一定會再發生同樣的事情，同樣的人也不一定都會在，怎麼把握當下，珍惜身邊的人其實才是我們的人生課題吧。</p>
-</div>
-<h3 style="font-size:19px;font-weight:700;margin:26px 0 6px">已移出戶籍成員</h3>
-<p style="margin:0 0 12px;color:var(--ink-soft)">隨筆</p>
-<div style="font-family:'Noto Sans TC',sans-serif;line-height:2;letter-spacing:.02em">
-<p style="margin:0 0 14px">平常幾乎沒機會去戶政事務所，幾天前偶然需要辦理戶籍謄本，只好找個空檔去一趟。本來覺得特意挑在平日中午前往，人應該很少吧？結果現場人山人海，確實有些驚訝。</p>
-<p style="margin:0 0 14px">終於輪到我時，承辦人簡單讓我填一些資料，便開始調閱紀錄。映入眼簾的是非常清楚的家庭記事，誰在哪一年哪一天做了甚麼決定，幾時出生幾時遷入何地，又在幾年幾月遷出某地，全部都被記錄得一清二楚，看到那白紙黑字，那瞬間我感到很衝擊。有一種從小到大一直曖昧模糊，沒有被解答的問題，透過一張文詞生硬，官腔的紀錄上得到更清晰的畫面。原來是發生這樣的事、難怪是這樣、原來如此，縈繞在我的腦海。</p>
-<p style="margin:0 0 14px">當下沒有太多的情緒，只覺得旁邊也來辦戶籍謄本的人，他的紀錄簡單內容又少，相比我的好像在看小說一樣，讓我覺得很搞笑。面不改色的填完資料，不知道哪根筋不對，我小心翼翼的問承辦人，是否能查詢已移出戶籍成員的聯絡方式。承辦人臉色大變，揮舞著手說道：不能！我們這裡沒在幫忙找人的！都要靠你們自己去找。</p>
-<p style="margin:0 0 14px">當然我本來就沒抱什麼希望，靜靜地點頭：這樣啊，知道了。於是開始收拾東西準備離開。承辦人看了我一眼又說，你是要找黃小姐嗎？</p>
-<p style="margin:0 0 14px">我說對，不過沒關係，我只是問問。</p>
-<p style="margin:0 0 14px">她的臉色有點軟化，又詢問：你找過她了嗎？</p>
-<p style="margin:0 0 14px">我又點點頭，小聲回答嘗試了各種方式，實在找不到。</p>
-<p style="margin:0 0 14px">承辦人突然變得有點和善，說也許她也不在原本的戶籍地了，如果你找不到她，那就只能等她來找你，我們這裡是不能透漏資料的。</p>
-<p style="margin:0 0 14px">我說沒關係，我能理解。當然應該也能理解為什麼我得不到答案。</p>
-<p style="margin:0 0 14px">走出戶政事務所以後發現自己的眼眶已經都是淚水，但這個情緒是悲傷還是失落我沒有搞清楚，畢竟這是很久以前早就被淡忘的事，實際對這個人的印象也不深了，什麼血濃於水的話也沒在相信，再加上現在的日子沒有什麼不好的，理應不該難過才對。</p>
-<p style="margin:0 0 14px">也許我只是在想為什麼她不願意再努力再堅持一下，而是毅然決然做出這個決定而已，後來覺得，想這些都是徒勞，沒被丟掉就該慶幸了哈。</p>
 </div>
 <h3 style="font-size:19px;font-weight:700;margin:26px 0 6px">寫在受訓前 — 和童年和解</h3>
 <p style="margin:0 0 12px;color:var(--ink-soft)">隨筆 · 2024</p>
@@ -993,61 +1047,6 @@ const WRITING = [
       {
         "t": "p",
         "x": "中秋節的時候跟著親戚們一起烤肉，大家聚在透天厝一樓，旁邊就是公園，遠方可以看到家家戶戶都出來烤肉，大概晚上九點多的時候滿月就已經高掛在天空了，甚至也可以看到幾個小孩子拿著仙女棒，橘黃色的火光在他們臉上綻放，映照他們的雙眼。當下這個畫面讓我看了很久，這個氛圍和踏實感，我花了一點時間去記憶它。那時候我就知道了，這個瞬間又要從手裡慢慢流逝掉了，明年或是後年都不一定會再發生同樣的事情，同樣的人也不一定都會在，怎麼把握當下，珍惜身邊的人其實才是我們的人生課題吧。"
-      }
-    ]
-  },
-  {
-    "id": "household",
-    "kicker": "隨筆",
-    "year": "",
-    "title": "已移出戶籍成員",
-    "subtitle": "",
-    "w": 190,
-    "h": 110,
-    "body": [
-      {
-        "t": "p",
-        "x": "平常幾乎沒機會去戶政事務所，幾天前偶然需要辦理戶籍謄本，只好找個空檔去一趟。本來覺得特意挑在平日中午前往，人應該很少吧？結果現場人山人海，確實有些驚訝。"
-      },
-      {
-        "t": "p",
-        "x": "終於輪到我時，承辦人簡單讓我填一些資料，便開始調閱紀錄。映入眼簾的是非常清楚的家庭記事，誰在哪一年哪一天做了甚麼決定，幾時出生幾時遷入何地，又在幾年幾月遷出某地，全部都被記錄得一清二楚，看到那白紙黑字，那瞬間我感到很衝擊。有一種從小到大一直曖昧模糊，沒有被解答的問題，透過一張文詞生硬，官腔的紀錄上得到更清晰的畫面。原來是發生這樣的事、難怪是這樣、原來如此，縈繞在我的腦海。"
-      },
-      {
-        "t": "p",
-        "x": "當下沒有太多的情緒，只覺得旁邊也來辦戶籍謄本的人，他的紀錄簡單內容又少，相比我的好像在看小說一樣，讓我覺得很搞笑。面不改色的填完資料，不知道哪根筋不對，我小心翼翼的問承辦人，是否能查詢已移出戶籍成員的聯絡方式。承辦人臉色大變，揮舞著手說道：不能！我們這裡沒在幫忙找人的！都要靠你們自己去找。"
-      },
-      {
-        "t": "p",
-        "x": "當然我本來就沒抱什麼希望，靜靜地點頭：這樣啊，知道了。於是開始收拾東西準備離開。承辦人看了我一眼又說，你是要找黃小姐嗎？"
-      },
-      {
-        "t": "p",
-        "x": "我說對，不過沒關係，我只是問問。"
-      },
-      {
-        "t": "p",
-        "x": "她的臉色有點軟化，又詢問：你找過她了嗎？"
-      },
-      {
-        "t": "p",
-        "x": "我又點點頭，小聲回答嘗試了各種方式，實在找不到。"
-      },
-      {
-        "t": "p",
-        "x": "承辦人突然變得有點和善，說也許她也不在原本的戶籍地了，如果你找不到她，那就只能等她來找你，我們這裡是不能透漏資料的。"
-      },
-      {
-        "t": "p",
-        "x": "我說沒關係，我能理解。當然應該也能理解為什麼我得不到答案。"
-      },
-      {
-        "t": "p",
-        "x": "走出戶政事務所以後發現自己的眼眶已經都是淚水，但這個情緒是悲傷還是失落我沒有搞清楚，畢竟這是很久以前早就被淡忘的事，實際對這個人的印象也不深了，什麼血濃於水的話也沒在相信，再加上現在的日子沒有什麼不好的，理應不該難過才對。"
-      },
-      {
-        "t": "p",
-        "x": "也許我只是在想為什麼她不願意再努力再堅持一下，而是毅然決然做出這個決定而已，後來覺得，想這些都是徒勞，沒被丟掉就該慶幸了哈。"
       }
     ]
   },
@@ -2120,7 +2119,7 @@ function Writing({ onOpen }) {
           shape="square"
         />
 
-        <div className="grid grid-cols-2 items-end gap-x-6 gap-y-10 pt-6 sm:grid-cols-3 lg:grid-cols-6">
+        <div className="grid grid-cols-2 items-end gap-x-6 gap-y-10 pt-6 sm:grid-cols-3 lg:grid-cols-5">
           {WRITING.map((piece) => <WritingFrame key={piece.id} piece={piece} onOpen={onOpen} />)}
         </div>
 
