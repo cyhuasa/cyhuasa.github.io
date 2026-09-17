@@ -281,18 +281,13 @@
     .hero-comp[data-active] .fighit { transform: none !important; }
   }
 
-  /* --- Monochrome chip: same box, no colour trigger -------------- */
+  /* --- Plain chip: a black box and nothing else. No hover, no
+         transition, no pointer change — it is a label, not a control. */
   .bw-chip {
     background: transparent;
     color: var(--ink);
     border: 2px solid var(--line);
-    transition: background-color 120ms linear, color 120ms linear;
-  }
-  .bw-chip:hover,
-  .bw-chip:focus-visible {
-    background: var(--ground-deep);
-    color: var(--ink-invert);
-    outline: none;
+    cursor: default;
   }
 
   /* --- Landing cover -------------------------------------------- */
@@ -625,14 +620,16 @@ const LANGUAGES = [
    capsule, so the grid keeps its rhythm while you fill it in.
    `note` tints the little corner square: yellow | red | blue.       */
 const PHOTOGRAPHY = [
-  { src: "photo-synthesizer.jpg", caption: "Apron at sunrise — Singapore Airlines", note: "yellow" },
-  { src: "photo-observer.jpg",    caption: "Bourse de Commerce, Paris",             note: "red"    },
-  { src: "photo-initiator.jpg",   caption: "Grab appraisal, Singapore",             note: "yellow" },
-  { src: null, caption: "", note: "yellow" },
-  { src: null, caption: "", note: "blue"   },
-  { src: null, caption: "", note: "yellow" },
-  { src: null, caption: "", note: "yellow" },
-  { src: null, caption: "", note: "red"    },
+  { src: "photo-facade.jpg",     caption: "Art Deco facade — stone, wreath, Greek key",   note: "yellow", pos: "50% 35%" },
+  { src: "photo-sagrada.jpg",    caption: "Sagrada Família, Barcelona",                   note: "red",    pos: "50% 40%" },
+  { src: "photo-madison.jpg",    caption: "Madison Ave & East 52nd, New York",            note: "yellow", pos: "50% 50%" },
+  { src: "photo-oculus.jpg",     caption: "Oculus and One World Trade, Church St",        note: "blue",   pos: "50% 38%" },
+  { src: "photo-redsphere.jpg",  caption: "Red sphere, and a man with a trolley",         note: "red",    pos: "50% 56%" },
+  { src: "photo-shoerepair.jpg", caption: "Shoe repair while u wait · 修鞋袋",             note: "yellow", pos: "50% 50%" },
+  { src: "photo-peacock.jpg",    caption: "The Perky Peacock, on the river wall",         note: "blue",   pos: "50% 58%" },
+  { src: "photo-balloondog.jpg", caption: "Balloon Dog, Jeff Koons",                      note: "blue",   pos: "42% 45%" },
+  { src: "photo-chairs.jpg",     caption: "A century of chairs, in open storage",         note: "yellow", pos: "50% 50%" },
+  { src: "photo-zigzag.jpg",     caption: "Rietveld Zig-Zag chair, 1934",                 note: "red",    pos: "50% 55%" },
 ];
 
 /* ---- WRITING -----------------------------------------------------
@@ -1396,7 +1393,7 @@ function Photography({ onOpen }) {
           shape="circle"
         />
 
-        <div className="grid grid-cols-2 gap-4 pt-4 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4 pt-4 sm:gap-5 lg:grid-cols-5">
           {PHOTOGRAPHY.map((ph, i) => (
             ph.src ? (
               <button
@@ -1405,7 +1402,9 @@ function Photography({ onOpen }) {
                 onClick={() => onOpen({ src: ph.src, caption: ph.caption, accent: NOTE_COLOR[ph.note], modal: true })}
                 aria-label={"Open photograph: " + ph.caption}
               >
-                <span className="cap-body"><img src={ph.src} alt={ph.caption} loading="lazy" /></span>
+                <span className="cap-body">
+                  <img src={ph.src} alt={ph.caption} loading="lazy" style={{ objectPosition: ph.pos || "50% 50%" }} />
+                </span>
                 <span className="cap-note" style={{ background: NOTE_COLOR[ph.note] }} />
               </button>
             ) : (
@@ -1420,7 +1419,7 @@ function Photography({ onOpen }) {
         </div>
 
         <p className="mono pt-6 text-[10px] uppercase tracking-[0.16em]" style={{ color: "var(--ink-soft)" }}>
-          {PHOTOGRAPHY.filter((p) => p.src).length} of {PHOTOGRAPHY.length} frames published
+          {PHOTOGRAPHY.filter((p) => p.src).length} frames · shot on layovers
         </p>
       </div>
     </section>
