@@ -577,7 +577,7 @@
 <main style="max-width:760px;margin:0 auto;padding:48px 20px 80px;line-height:1.7">
 <h2 style="font-weight:900;text-transform:uppercase;font-size:34px;margin:0 0 16px;letter-spacing:-0.03em">Initiator, Synthesizer, Observer</h2>
 <p style="margin:0 0 12px;color:var(--ink-soft)">Grew up in Taipei. Studied in Taichung, Kaohsiung and Belgium. Based in Singapore.</p>
-<p style="margin:0 0 12px;color:var(--ink)">Asa’s journey took her from a wandering childhood to Singapore, where she became a flight attendant. Amid life at 30,000 feet, she pursues a master’s degree, balancing work, writing, and study with relentless drive. She writes of growth, everyday aviation, and urban travels—chronicling how she rose from the cracks into a free, resilient soul.</p>
+<p style="margin:0 0 12px;color:var(--ink)">I plan demand and inventory for multi-channel e-commerce, and I brief the people who have to act on it. Python, SQL and advanced Excel across 65,000+ SKUs at an Amazon third-party seller and at Decathlon Taiwan; a Master of Management in logistics and supply chain, read part-time while flying long-haul for Singapore Airlines — where the customers are C-suite and the margin for error is zero. I turn operational reality into decisions someone can sign off on.</p>
 <h2 style="font-weight:900;text-transform:uppercase;letter-spacing:-0.02em;font-size:28px;margin:52px 0 16px;border-top:4px solid var(--line);padding-top:18px">Target roles</h2>
 <p style="margin:0 0 12px;color:var(--ink)">Key Account Management · Client Success · Business Development · Relationship Management · Demand Planning · Inventory Optimization · Supply Chain</p>
 <h2 style="font-weight:900;text-transform:uppercase;letter-spacing:-0.02em;font-size:28px;margin:52px 0 16px;border-top:4px solid var(--line);padding-top:18px">Independent Field Research</h2>
@@ -638,6 +638,7 @@
 <h2 style="font-weight:900;text-transform:uppercase;letter-spacing:-0.02em;font-size:28px;margin:52px 0 16px;border-top:4px solid var(--line);padding-top:18px">Photography</h2>
 <p style="margin:0 0 12px;color:var(--ink-soft)">Art Deco facade — stone, wreath, Greek key · Sagrada Família, Barcelona · Madison Ave &amp; East 52nd, New York · Oculus and One World Trade, Church St · Red sphere, and a man with a trolley · Shoe repair while u wait · 修鞋袋 · The Perky Peacock, on the river wall · Balloon Dog, Jeff Koons · A century of chairs, in open storage · Rietveld Zig-Zag chair, 1934</p>
 <h2 style="font-weight:900;text-transform:uppercase;letter-spacing:-0.02em;font-size:28px;margin:52px 0 16px;border-top:4px solid var(--line);padding-top:18px">Writing</h2>
+<p style="margin:0 0 20px;font-size:18px;line-height:1.6">Asa’s journey took her from a wandering childhood to Singapore, where she became a flight attendant. Amid life at 30,000 feet, she pursues a master’s degree, balancing work, writing, and study with relentless drive. She writes of growth, everyday aviation, and urban travels—chronicling how she rose from the cracks into a free, resilient soul.</p>
 <h3 style="font-size:19px;font-weight:700;margin:26px 0 6px">衛武營實習誌 — 知識與觀念的交錯</h3>
 <p style="margin:0 0 12px;color:var(--ink-soft)">實習誌</p>
 <div style="font-family:'Noto Sans TC',sans-serif;line-height:2;letter-spacing:.02em">
@@ -1613,11 +1614,12 @@ function Hero({ onPhoto, resetTick }) {
             <div aria-hidden="true" className="wipe my-7 h-[6px] w-full" style={{ background: "var(--line)" }} />
 
             <p className="rise rise-2 max-w-[56ch] text-[17px] sm:text-[19px] leading-[1.6]" style={{ color: "var(--ink)" }}>
-              Asa&rsquo;s journey took her from a wandering childhood to Singapore, where she became a
-              flight attendant. Amid life at 30,000 feet, she pursues a master&rsquo;s degree, balancing
-              work, writing, and study with relentless drive. She writes of growth, everyday aviation,
-              and urban travels&mdash;<strong className="font-bold">chronicling how she rose from the cracks
-              into a free, resilient soul.</strong>
+              I plan demand and inventory for multi-channel e-commerce, and I brief the people who
+              have to act on it. Python, SQL and advanced Excel across 65,000+ SKUs at an Amazon
+              third-party seller and at Decathlon Taiwan; a Master of Management in logistics and
+              supply chain, read part-time while flying long-haul for Singapore Airlines &mdash;
+              where the customers are C-suite and the margin for error is zero.{" "}
+              <strong className="font-bold">I turn operational reality into decisions someone can sign off on.</strong>
             </p>
 
             <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -2114,12 +2116,26 @@ function Writing({ onOpen }) {
         <SectionHead
           index="Off duty / 05"
           title={<>Writing</>}
-          lede="Essays on growth, everyday aviation and urban travel — written between rosters, in Mandarin. Each frame opens one piece."
+          lede="Five pieces, written in Mandarin between rosters. Each frame opens one."
           accent="var(--red)"
           shape="square"
         />
 
-        <div className="grid grid-cols-2 items-end gap-x-6 gap-y-10 pt-6 sm:grid-cols-3 lg:grid-cols-5">
+        {/* the author, in her own words — this belongs beside the writing */}
+        <div className="grid grid-cols-12 gap-6 pt-2">
+          <div className="col-span-12 lg:col-span-9 lg:col-start-3">
+            <div aria-hidden="true" className="mb-5 h-[6px] w-24" style={{ background: "var(--red)" }} />
+            <p className="max-w-[58ch] text-[18px] leading-[1.62] sm:text-[21px]" style={{ color: "var(--ink)" }}>
+              Asa&rsquo;s journey took her from a wandering childhood to Singapore, where she became a
+              flight attendant. Amid life at 30,000 feet, she pursues a master&rsquo;s degree, balancing
+              work, writing, and study with relentless drive. She writes of growth, everyday aviation,
+              and urban travels&mdash;<strong className="font-bold">chronicling how she rose from the
+              cracks into a free, resilient soul.</strong>
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 items-end gap-x-6 gap-y-10 pt-10 sm:grid-cols-3 lg:grid-cols-5">
           {WRITING.map((piece) => <WritingFrame key={piece.id} piece={piece} onOpen={onOpen} />)}
         </div>
 
