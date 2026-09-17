@@ -281,6 +281,148 @@
     .hero-comp[data-active] .fighit { transform: none !important; }
   }
 
+  /* --- Monochrome chip: same box, no colour trigger -------------- */
+  .bw-chip {
+    background: transparent;
+    color: var(--ink);
+    border: 2px solid var(--line);
+    transition: background-color 120ms linear, color 120ms linear;
+  }
+  .bw-chip:hover,
+  .bw-chip:focus-visible {
+    background: var(--ground-deep);
+    color: var(--ink-invert);
+    outline: none;
+  }
+
+  /* --- Landing cover -------------------------------------------- */
+  .landing {
+    min-height: 100svh;
+    background: var(--ground-alt);
+    border-bottom: var(--rule-w) solid var(--line);
+    display: flex;
+    flex-direction: column;
+  }
+  .landing-mark { width: min(46vw, 300px); height: auto; }
+  @media (max-width: 640px) { .landing-mark { width: 62vw; } }
+
+  @keyframes cover-in { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+  .cover-fade { animation: cover-in 760ms cubic-bezier(.16,1,.3,1) both; }
+  .cover-d1 { animation-delay: 120ms; }
+  .cover-d2 { animation-delay: 260ms; }
+  .cover-d3 { animation-delay: 400ms; }
+
+  @keyframes nudge { 0%,100% { transform: translateY(0); } 50% { transform: translateY(6px); } }
+  .scroll-cue { animation: nudge 2.2s ease-in-out infinite; }
+
+  /* nav stays out of the way until the cover is scrolled past */
+  .topbar {
+    transition: transform 320ms cubic-bezier(.16,1,.3,1), opacity 220ms linear;
+  }
+  .topbar[data-hidden="true"] {
+    transform: translateY(-100%);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* --- Fullscreen photo --------------------------------------- */
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(16px, 4vw, 48px);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 240ms linear, visibility 0s linear 240ms;
+  }
+  .lightbox[data-open="true"] { opacity: 1; visibility: visible; transition-delay: 0s; }
+  .lightbox-scrim { position: absolute; inset: 0; background: var(--ground); }
+  .lightbox-scrim::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--acc);
+    opacity: 0.14;
+  }
+  .lightbox-figure {
+    position: relative;
+    max-width: min(94vw, 1100px);
+    max-height: 84svh;
+    border: 4px solid var(--line);
+    background: var(--ground);
+    transform: scale(0.96);
+    transition: transform 280ms cubic-bezier(.16,1,.3,1);
+  }
+  .lightbox[data-open="true"] .lightbox-figure { transform: none; }
+  .lightbox-figure img {
+    display: block;
+    max-width: 100%;
+    max-height: calc(84svh - 8px);
+    width: auto;
+    height: auto;
+    object-fit: contain;
+  }
+  /* hover-opened: never swallow the pointer. click-opened: dismissable */
+  .lightbox[data-modal="false"] { pointer-events: none; }
+
+  /* --- Photography: capsule grid ------------------------------- */
+  .cap {
+    position: relative;
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+  }
+  .cap-body {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    background: var(--ground-deep);
+    border-radius: 0 999px 999px 0;
+    transition: transform 180ms cubic-bezier(.16,1,.3,1);
+  }
+  .cap-body img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .cap:hover .cap-body,
+  .cap:focus-visible .cap-body { transform: translate(-3px, -3px); }
+  .cap-note {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 26%;
+    aspect-ratio: 1;
+    background: var(--yellow);
+    transition: transform 180ms cubic-bezier(.16,1,.3,1);
+  }
+  .cap:hover .cap-note { transform: translate(3px, 3px); }
+  .cap-empty {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ground);
+    opacity: 0.5;
+  }
+
+  /* --- Writing: isometric frames ------------------------------- */
+  .iso { display: block; width: 100%; padding: 0; border: none; background: none; cursor: pointer; text-align: left; }
+  .iso svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .iso g { transition: transform 200ms cubic-bezier(.16,1,.3,1); }
+  .iso:hover g, .iso:focus-visible g { transform: translate(0, -7px); }
+  .iso:focus-visible { outline: 3px solid var(--blue); outline-offset: 4px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .scroll-cue { animation: none; }
+    .cover-fade { animation: none; }
+    .iso:hover g, .cap:hover .cap-body, .cap:hover .cap-note { transform: none; }
+  }
+
   .clamp-5 {
     display: -webkit-box;
     -webkit-line-clamp: 5;
@@ -477,27 +619,42 @@ const LANGUAGES = [
   { name: "Korean",           note: "Conversational", level: 2, accent: "var(--yellow)" },
 ];
 
-const INTERESTS = [
-  {
-    kicker: "PHOTOGRAPHY",
-    title: "Frames from the jump seat",
-    body: "Shooting terminals, tarmacs and the geometry of transit hubs on layovers — a running visual note on how people and goods actually move.",
-    accent: "var(--blue)",
-  },
-  {
-    kicker: "WRITING",
-    title: "Notes on operations",
-    body: "Short essays on logistics, service design and what breaks in the last mile — written to keep the analytical habit sharp between projects.",
-    accent: "var(--red)",
-  },
+/* ---- PHOTOGRAPHY -------------------------------------------------
+   Add a tile by adding a row. Upload the .jpg next to index.html and
+   put its file name in `src`. A row with src: null shows an empty
+   capsule, so the grid keeps its rhythm while you fill it in.
+   `note` tints the little corner square: yellow | red | blue.       */
+const PHOTOGRAPHY = [
+  { src: "photo-synthesizer.jpg", caption: "Apron at sunrise — Singapore Airlines", note: "yellow" },
+  { src: "photo-observer.jpg",    caption: "Bourse de Commerce, Paris",             note: "red"    },
+  { src: "photo-initiator.jpg",   caption: "Grab appraisal, Singapore",             note: "yellow" },
+  { src: null, caption: "", note: "yellow" },
+  { src: null, caption: "", note: "blue"   },
+  { src: null, caption: "", note: "yellow" },
+  { src: null, caption: "", note: "yellow" },
+  { src: null, caption: "", note: "red"    },
+];
+
+/* ---- WRITING -----------------------------------------------------
+   One frame per piece. Put the article link in `url` (Medium, Substack,
+   anywhere). Leave url empty and the frame reads as unpublished.
+   `w` and `h` set the frame's proportions, so the row stays irregular. */
+const WRITING = [
+  { title: "Rising from the cracks",      kicker: "Essay",      year: "2026", url: "", w: 120, h: 190 },
+  { title: "Everyday aviation",           kicker: "Column",     year: "2026", url: "", w: 170, h: 120 },
+  { title: "What the last mile breaks",   kicker: "Field note", year: "2025", url: "", w: 130, h: 160 },
+  { title: "Cities, in transit",          kicker: "Travel",     year: "2025", url: "", w: 190, h: 110 },
+  { title: "Studying at 30,000 feet",     kicker: "Essay",      year: "2025", url: "", w: 140, h: 175 },
+  { title: "Notes on service recovery",   kicker: "Field note", year: "2024", url: "", w: 160, h: 130 },
 ];
 
 const NAV = [
-  { id: "work",      label: "Projects" },
-  { id: "history",   label: "Experience" },
-  { id: "skills",    label: "Skills" },
-  { id: "interests", label: "Interests" },
-  { id: "contact",   label: "Contact" },
+  { id: "work",    label: "Projects" },
+  { id: "history", label: "Experience" },
+  { id: "skills",  label: "Skills" },
+  { id: "photos",  label: "Photography" },
+  { id: "writing", label: "Writing" },
+  { id: "contact", label: "Contact" },
 ];
 
 /* ============================================================
@@ -511,6 +668,62 @@ const ON = {
   "var(--yellow)": "var(--on-yellow)",
   "var(--ink)":    "var(--ink-invert)",
 };
+
+/* The cover mark: an uppercase A cut from one silhouette, then quartered
+   blue / yellow / black / red — the Bauhaus poster's own colour logic. */
+function LetterA() {
+  return (
+    <svg className="landing-mark cover-fade cover-d1" viewBox="-6 -6 412 532" role="img" aria-label="Letter A, quartered in Bauhaus primaries">
+      <defs>
+        <clipPath id="letterA">
+          <path d="M 200,0 L 400,520 L 300,520 L 200,208 L 100,520 L 0,520 Z" />
+          <path d="M 61.5,358 L 338.5,358 L 361.5,420 L 38.5,420 Z" />
+        </clipPath>
+      </defs>
+      <g clipPath="url(#letterA)">
+        <rect x="-10" y="-10" width="220" height="280" fill="var(--blue)" />
+        <rect x="200" y="-10" width="220" height="280" fill="var(--yellow)" />
+        <rect x="-10" y="260" width="220" height="280" fill="var(--ground-deep)" />
+        <rect x="200" y="260" width="220" height="280" fill="var(--red)" />
+      </g>
+    </svg>
+  );
+}
+
+function Landing() {
+  return (
+    <section id="cover" className="landing">
+      <div className="mx-auto flex w-full max-w-[1240px] flex-1 flex-col px-5 sm:px-8">
+        <div className="cover-fade eyebrow pt-8 sm:pt-10" style={{ color: "var(--ink-soft)" }}>
+          {OWNER.latin}
+        </div>
+
+        <div className="flex flex-1 flex-col items-center justify-center py-10">
+          <LetterA />
+          <h1 className="display cover-fade cover-d2 pt-9 text-center text-[34px] sm:text-[48px] lg:text-[56px]">
+            Asa, Ad Astra.
+          </h1>
+          <p className="cover-fade cover-d3 mono pt-4 text-center text-[11px] uppercase tracking-[0.2em]"
+             style={{ color: "var(--ink-soft)" }}>
+            Key Account · Client Success · Supply Chain
+          </p>
+        </div>
+
+        <div className="flex items-end justify-between pb-8 sm:pb-10">
+          <span className="cover-fade cover-d3 mono text-[11px] uppercase tracking-[0.2em]"
+                style={{ color: "var(--ink-soft)" }}>
+            Portfolio 2026
+          </span>
+          <a href="#top" className="cover-fade cover-d3 mono flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] no-underline"
+             style={{ color: "var(--ink)" }}>
+            Enter
+            <span className="scroll-cue block" aria-hidden="true">↓</span>
+          </a>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 function Tag({ children, accent = "var(--blue)" }) {
   return (
@@ -555,9 +768,11 @@ function SectionHead({ index, title, lede, accent, shape }) {
    NAV
    ============================================================ */
 
-function TopBar({ active }) {
+function TopBar({ active, hidden }) {
   const [progress, setProgress] = useState(0);
   const [open, setOpen] = useState(false);
+
+  useEffect(() => { if (hidden) setOpen(false); }, [hidden]);
 
   useEffect(() => {
     const onScroll = () => {
@@ -572,7 +787,8 @@ function TopBar({ active }) {
 
   return (
     <header
-      className="sticky top-0 z-50"
+      className="topbar sticky top-0 z-50"
+      data-hidden={hidden ? "true" : undefined}
       style={{ background: "var(--ground)", borderBottom: "var(--border-w) solid var(--line)" }}
     >
       <div className="mx-auto max-w-[1240px] px-5 sm:px-8">
@@ -653,19 +869,84 @@ const FIGURES = [
   {
     key: "sqr", entrance: "g-sq",
     photo: "photo-initiator.jpg",
+    pos: "78% 50%",
+    accent: "var(--yellow)",
     alt: "Asa presenting the Grab Holdings acquisition appraisal",
+    caption: "Observer — Grab Holdings appraisal, Singapore",
   },
   {
     key: "cir", entrance: "g-ci",
     photo: "photo-observer.jpg",
+    pos: "55% 45%",
+    accent: "var(--blue)",
     alt: "Asa at the Bourse de Commerce, Paris",
+    caption: "Synthesizer — Bourse de Commerce, Paris",
   },
   {
     key: "tri", entrance: "g-tr",
     photo: "photo-synthesizer.jpg",
+    pos: "50% 43%",
+    accent: "var(--red)",
     alt: "Asa in Singapore Airlines uniform on the apron at sunrise",
+    caption: "Initiator — apron at sunrise, Singapore Airlines",
   },
 ];
+
+/* Full-screen photograph. Opened on hover from the hero (pointer
+   transparent, dismisses itself) or by a click in the photography
+   grid (modal, closes on click or Escape). */
+function Lightbox({ data, onClose }) {
+  const last = useRef(null);
+  if (data) last.current = data;
+  const d = data || last.current;
+  const modal = Boolean(data && data.modal);
+
+  useEffect(() => {
+    if (!modal) return;
+    const onKey = (e) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [modal, onClose]);
+
+  return (
+    <div
+      className="lightbox"
+      data-open={data ? "true" : undefined}
+      data-modal={modal ? "true" : "false"}
+      style={{ "--acc": (d && d.accent) || "var(--blue)" }}
+      onClick={modal ? onClose : undefined}
+      role={modal ? "dialog" : undefined}
+      aria-modal={modal || undefined}
+      aria-hidden={data ? undefined : "true"}
+    >
+      <div className="lightbox-scrim" />
+
+      {d && (
+        <figure className="lightbox-figure m-0">
+          <img src={d.src} alt={d.caption || ""} />
+          {d.caption && (
+            <figcaption
+              className="mono absolute bottom-0 left-0 px-3 py-2 text-[10px] uppercase tracking-[0.14em]"
+              style={{ background: "var(--ground-deep)", color: "var(--ink-invert)" }}
+            >
+              {d.caption}
+            </figcaption>
+          )}
+        </figure>
+      )}
+
+      {modal && (
+        <button
+          className="mono absolute right-4 top-4 border-2 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.16em] sm:right-8 sm:top-8"
+          style={{ borderColor: "var(--line)", background: "var(--ground)", color: "var(--ink)" }}
+          onClick={onClose}
+        >
+          Close ✕
+        </button>
+      )}
+    </div>
+  );
+}
 
 function HeroComposition({ active, onHover }) {
   return (
@@ -689,7 +970,7 @@ function HeroComposition({ active, onHover }) {
               </div>
               <div className="face face-back">
                 <div className="shape">
-                  <img src={f.photo} alt={f.alt} loading="lazy" />
+                  <img src={f.photo} alt={f.alt} style={{ objectPosition: f.pos }} />
                 </div>
                 {f.key === "tri" && (
                   <svg className="tri-edge" viewBox="0 0 280 138" preserveAspectRatio="none" aria-hidden="true">
@@ -712,9 +993,22 @@ const TRAITS = [
   { word: "Observer",      fig: "sqr", acc: "var(--yellow)", on: "var(--on-yellow)" },
 ];
 
-function Hero() {
+function Hero({ onPhoto }) {
   const [note, setNote] = useState(false);
   const [active, setActive] = useState(null);
+
+  /* Hold a shape for a beat and the photograph takes the whole screen.
+     The delay keeps a mouse crossing the hero from flashing it open. */
+  useEffect(() => {
+    if (!active) { onPhoto(null); return; }
+    const f = FIGURES.find((x) => x.key === active);
+    if (!f) return;
+    const t = setTimeout(
+      () => onPhoto({ src: f.photo, caption: f.caption, accent: f.accent, modal: false }),
+      260
+    );
+    return () => clearTimeout(t);
+  }, [active, onPhoto]);
 
   const onResume = (e) => {
     if (!RESUME_URL) {
@@ -771,10 +1065,11 @@ function Hero() {
             <div aria-hidden="true" className="wipe my-7 h-[6px] w-full" style={{ background: "var(--line)" }} />
 
             <p className="rise rise-2 max-w-[56ch] text-[17px] sm:text-[19px] leading-[1.6]" style={{ color: "var(--ink)" }}>
-              From grassroots field research on delivery platforms to high-stakes stakeholder management
-              at 38,000 feet, I bridge ground-level operational reality with executive decision-making.
-              Backed by e-commerce inventory analytics and supply chain training,
-              <strong className="font-bold"> I turn complex systems into clear, actionable commercial moves.</strong>
+              Asa&rsquo;s journey took her from a wandering childhood to Singapore, where she became a
+              flight attendant. Amid life at 30,000 feet, she pursues a master&rsquo;s degree, balancing
+              work, writing, and study with relentless drive. She writes of growth, everyday aviation,
+              and urban travels&mdash;<strong className="font-bold">chronicling how she rose from the cracks
+              into a free, resilient soul.</strong>
             </p>
 
             <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -825,21 +1120,13 @@ function Hero() {
             <div className="mt-8 lg:ml-auto w-full max-w-[380px]">
               <div className="eyebrow pb-3" style={{ color: "var(--ink-soft)" }}>Target roles</div>
               <ul className="flex flex-wrap gap-1.5 list-none p-0 m-0">
-                {TARGETS.map((t, i) => {
-                  const cycle = ["var(--red)", "var(--blue)", "var(--yellow)"];
-                  const acc = cycle[i % 3];
-                  return (
-                    <li key={t}>
-                      <span
-                        tabIndex="0"
-                        className="bh-chip mono block border-2 px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.12em]"
-                        style={{ "--acc": acc, "--acc-on": ON[acc] }}
-                      >
-                        {t}
-                      </span>
-                    </li>
-                  );
-                })}
+                {TARGETS.map((t) => (
+                  <li key={t}>
+                    <span className="bw-chip mono block px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.12em]">
+                      {t}
+                    </span>
+                  </li>
+                ))}
               </ul>
             </div>
           </div>
@@ -1046,7 +1333,11 @@ function Skills() {
                   <span className="mono text-[11px] font-semibold uppercase tracking-[0.18em]">{g.label}</span>
                 </div>
                 <div className="flex flex-wrap gap-2 px-4 py-4">
-                  {g.items.map((it) => <Tag key={it} accent={g.accent}>{it}</Tag>)}
+                  {g.items.map((it) => (
+                    <span key={it} className="bw-chip mono inline-flex items-center px-2.5 py-1 text-[10px] font-semibold uppercase leading-none tracking-[0.14em]">
+                      {it}
+                    </span>
+                  ))}
                 </div>
               </div>
             ))}
@@ -1087,70 +1378,130 @@ function Skills() {
 }
 
 /* ============================================================
-   INTERESTS
+   PHOTOGRAPHY
    ============================================================ */
 
-function PhotoTile({ i }) {
-  const shapes = [
-    { bg: "var(--blue)",   el: <span className="block h-1/2 w-full half-top" style={{ background: "var(--yellow)" }} /> },
-    { bg: "var(--ground-alt)", el: <span className="block h-full w-full quarter-tl" style={{ background: "var(--red)" }} /> },
-    { bg: "var(--yellow)", el: <span className="block h-3/5 w-3/5 rounded-full" style={{ background: "var(--ground-deep)" }} /> },
-    { bg: "var(--red)",    el: <span className="block h-full w-full quarter-br" style={{ background: "var(--blue)" }} /> },
-  ];
-  const s = shapes[i % shapes.length];
-  return (
-    <div
-      className="flex aspect-square items-end justify-center overflow-hidden border-2"
-      style={{ borderColor: "var(--line)", background: s.bg }}
-      aria-hidden="true"
-    >
-      {s.el}
-    </div>
-  );
-}
+const NOTE_COLOR = { yellow: "var(--yellow)", red: "var(--red)", blue: "var(--blue)" };
 
-function Interests() {
+function Photography({ onOpen }) {
   return (
-    <section id="interests" className="py-14 sm:py-20" style={{ borderBottom: "var(--rule-w) solid var(--line)", background: "var(--ground-alt)" }}>
+    <section id="photos" className="py-14 sm:py-20"
+             style={{ borderBottom: "var(--rule-w) solid var(--line)", background: "var(--ground-alt)" }}>
       <div className="mx-auto max-w-[1240px] px-5 sm:px-8">
         <SectionHead
           index="Off duty / 04"
-          title={<>Personal<br />Interests</>}
-          lede="Two habits that feed the work: looking closely at how places move, and writing down what I saw."
+          title={<>Photography</>}
+          lede="Terminals, tarmacs and the geometry of transit hubs, shot on layovers. Click any frame to open it full screen."
           accent="var(--blue)"
           shape="circle"
         />
 
-        <div className="grid grid-cols-12 gap-6 pt-4">
-          <div className="col-span-12 md:col-span-7 border-2 p-5" style={{ borderColor: "var(--line)", background: "var(--ground)" }}>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {[0, 1, 2, 3].map((i) => <PhotoTile key={i} i={i} />)}
-            </div>
-            <div className="mt-5 pt-4" style={{ borderTop: "var(--border-w) solid var(--line)" }}>
-              <div className="eyebrow pb-2" style={{ color: "var(--ink-soft)" }}>{INTERESTS[0].kicker}</div>
-              <h3 className="text-[24px] font-bold leading-tight tracking-[-0.02em]">{INTERESTS[0].title}</h3>
-              <p className="mt-2.5 max-w-[58ch] text-[14.5px] leading-[1.65]" style={{ color: "var(--ink-soft)" }}>{INTERESTS[0].body}</p>
-            </div>
-          </div>
-
-          <div className="col-span-12 md:col-span-5 flex flex-col border-2" style={{ borderColor: "var(--line)", background: "var(--ground)" }}>
-            <div className="flex items-center justify-between px-5 py-4" style={{ background: INTERESTS[1].accent, borderBottom: "var(--border-w) solid var(--line)" }}>
-              <span className="mono text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: "var(--on-red)" }}>{INTERESTS[1].kicker}</span>
-              <span aria-hidden="true" className="block h-5 w-5" style={{ background: "var(--ground)", clipPath: "polygon(50% 0, 100% 100%, 0 100%)" }} />
-            </div>
-            <div className="flex flex-1 flex-col justify-between p-5">
-              <div>
-                <h3 className="text-[24px] font-bold leading-tight tracking-[-0.02em]">{INTERESTS[1].title}</h3>
-                <p className="mt-2.5 text-[14.5px] leading-[1.65]" style={{ color: "var(--ink-soft)" }}>{INTERESTS[1].body}</p>
+        <div className="grid grid-cols-2 gap-4 pt-4 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
+          {PHOTOGRAPHY.map((ph, i) => (
+            ph.src ? (
+              <button
+                key={i}
+                className="cap"
+                onClick={() => onOpen({ src: ph.src, caption: ph.caption, accent: NOTE_COLOR[ph.note], modal: true })}
+                aria-label={"Open photograph: " + ph.caption}
+              >
+                <span className="cap-body"><img src={ph.src} alt={ph.caption} loading="lazy" /></span>
+                <span className="cap-note" style={{ background: NOTE_COLOR[ph.note] }} />
+              </button>
+            ) : (
+              <div key={i} className="cap" aria-hidden="true" style={{ cursor: "default" }}>
+                <span className="cap-body">
+                  <span className="cap-empty mono text-[22px]">+</span>
+                </span>
+                <span className="cap-note" style={{ background: NOTE_COLOR[ph.note] }} />
               </div>
-              <div className="mt-6 flex flex-wrap gap-1.5">
-                <Tag accent="var(--red)">Logistics</Tag>
-                <Tag accent="var(--red)">Service design</Tag>
-                <Tag accent="var(--red)">Field notes</Tag>
-              </div>
-            </div>
-          </div>
+            )
+          ))}
         </div>
+
+        <p className="mono pt-6 text-[10px] uppercase tracking-[0.16em]" style={{ color: "var(--ink-soft)" }}>
+          {PHOTOGRAPHY.filter((p) => p.src).length} of {PHOTOGRAPHY.length} frames published
+        </p>
+      </div>
+    </section>
+  );
+}
+
+/* ============================================================
+   WRITING
+   ============================================================ */
+
+/* One open frame, drawn in axonometric projection: top face red, the
+   right cheek yellow, the face itself the page colour, and the whole
+   thing standing on its own cast shadow. */
+function IsoFrame({ w, h }) {
+  const dx = 26, dy = 16, p = 16;
+  const W = w, H = h;
+  const front = `M0,0 L${W},0 L${W},${H} L${W - p},${H} L${W - p},${p} L${p},${p} L${p},${H} L0,${H} Z`;
+  const top   = `M0,0 L${W},0 L${W + dx},${-dy} L${dx},${-dy} Z`;
+  const side  = `M${W},0 L${W + dx},${-dy} L${W + dx},${H - dy} L${W},${H} Z`;
+  const shade = `M0,${H} L${W},${H} L${W - dx},${H + dy} L${-dx},${H + dy} Z`;
+  return (
+    <svg viewBox={`${-dx - 6} ${-dy - 6} ${W + 2 * dx + 12} ${H + 2 * dy + 12}`} aria-hidden="true">
+      <g stroke="var(--line)" strokeWidth="3" strokeLinejoin="round">
+        <path d={shade} fill="var(--line)" />
+        <path d={side}  fill="var(--yellow)" />
+        <path d={top}   fill="var(--red)" />
+        <path d={front} fill="var(--ground)" fillRule="evenodd" />
+      </g>
+    </svg>
+  );
+}
+
+function WritingFrame({ piece }) {
+  const live = Boolean(piece.url);
+  const body = (
+    <>
+      <IsoFrame w={piece.w} h={piece.h} />
+      <div className="pt-4">
+        <div className="eyebrow pb-1.5" style={{ color: "var(--ink-soft)" }}>
+          {piece.kicker} · {piece.year}
+        </div>
+        <div className="text-[17px] font-bold leading-tight tracking-[-0.015em]">{piece.title}</div>
+        <div className="mono pt-1.5 text-[9.5px] uppercase tracking-[0.14em]"
+             style={{ color: live ? "var(--blue)" : "var(--ink-soft)" }}>
+          {live ? "Read →" : "In draft"}
+        </div>
+      </div>
+    </>
+  );
+
+  if (!live) return <div className="iso" style={{ cursor: "default", opacity: 0.62 }}>{body}</div>;
+
+  return (
+    <a className="iso no-underline" style={{ color: "var(--ink)" }}
+       href={piece.url} target="_blank" rel="noopener noreferrer">
+      {body}
+    </a>
+  );
+}
+
+function Writing() {
+  const live = WRITING.filter((w) => w.url).length;
+  return (
+    <section id="writing" className="py-14 sm:py-20"
+             style={{ borderBottom: "var(--rule-w) solid var(--line)" }}>
+      <div className="mx-auto max-w-[1240px] px-5 sm:px-8">
+        <SectionHead
+          index="Off duty / 05"
+          title={<>Writing</>}
+          lede="Essays on growth, everyday aviation and urban travel — written between rosters. Each frame is one piece."
+          accent="var(--red)"
+          shape="square"
+        />
+
+        <div className="grid grid-cols-2 items-end gap-x-6 gap-y-10 pt-6 sm:grid-cols-3 lg:grid-cols-6">
+          {WRITING.map((piece, i) => <WritingFrame key={i} piece={piece} />)}
+        </div>
+
+        <p className="mono pt-8 text-[10px] uppercase tracking-[0.16em]" style={{ color: "var(--ink-soft)" }}>
+          {live} of {WRITING.length} pieces published
+        </p>
       </div>
     </section>
   );
@@ -1223,6 +1574,38 @@ function Contact() {
 
 function App() {
   const [active, setActive] = useState("work");
+  const [photo, setPhoto] = useState(null);
+  const [past, setPast] = useState(false);
+
+  const openPhoto = useCallback((d) => setPhoto(d), []);
+  const closePhoto = useCallback(() => setPhoto(null), []);
+
+  /* A hover-opened photo ignores the pointer, so on a touch screen the
+     next tap anywhere has to be what dismisses it. A click-opened one
+     is modal instead: it holds the page still until it is closed. */
+  useEffect(() => {
+    if (!photo) return;
+    if (photo.modal) {
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => { document.body.style.overflow = prev; };
+    }
+    const dismiss = () => setPhoto(null);
+    window.addEventListener("pointerdown", dismiss);
+    return () => window.removeEventListener("pointerdown", dismiss);
+  }, [photo]);
+
+  /* the cover owns the first screen; the bar arrives once it is gone */
+  useEffect(() => {
+    const cover = document.getElementById("cover");
+    if (!cover) { setPast(true); return; }
+    const obs = new IntersectionObserver(
+      ([e]) => setPast(!e.isIntersecting),
+      { rootMargin: "-72px 0px 0px 0px" }
+    );
+    obs.observe(cover);
+    return () => obs.disconnect();
+  }, []);
 
   useEffect(() => {
     const ids = NAV.map((n) => n.id);
@@ -1243,15 +1626,18 @@ function App() {
 
   return (
     <div>
-      <TopBar active={active} />
+      <TopBar active={active} hidden={!past} />
       <main>
-        <Hero />
+        <Landing />
+        <Hero onPhoto={openPhoto} />
         <Projects />
         <Timeline />
         <Skills />
-        <Interests />
+        <Photography onOpen={openPhoto} />
+        <Writing />
         <Contact />
       </main>
+      <Lightbox data={photo} onClose={closePhoto} />
     </div>
   );
 }
