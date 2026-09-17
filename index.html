@@ -593,6 +593,11 @@
 <p style="margin:0 0 12px;color:var(--ink-soft)">Singapore Airlines In-Flight Operations</p>
 <p style="margin:0 0 12px;color:var(--ink)">Managed intercontinental flight operations at Singapore Airlines, delivering zero-compromise safety compliance and premium service execution across global routes. Directed time-critical crisis management within diverse, cross-cultural crews while cultivating high-value rapport with C-suite travelers. All while sustaining the physical and scheduling demands of long-haul flights across time zones, I simultaneously completed a rigorous part-time Master of Management with a focus on logistics and supply chains — anchoring field-tested composure with advanced operational discipline.</p>
 <p style="margin:0 0 12px;color:var(--ink-soft)">Crisis Management · High-Pressure Operations · SOP Execution · Executive Engagement · Cross-Cultural Leadership</p>
+<h3 style="font-size:19px;font-weight:700;margin:26px 0 6px">04. Grab Holdings: US$600M Acquisition Appraisal of foodpanda Taiwan</h3>
+<p style="margin:0 0 12px;color:var(--ink-soft)">Graduate coursework · MGT566 Finance for Business Decisions, SUSS · Strategy &amp; risk workstream</p>
+<p style="margin:0 0 12px;color:var(--ink)">A four-person corporate finance team appraised Grab&#x27;s proposed US$600M acquisition of foodpanda Taiwan and put a formal recommendation to the board. I selected the case and gathered the underlying research, then owned the whole non-financial assessment: why a market entry clears where a horizontal merger did not — the Uber Eats bid the Taiwan FTC blocked in 2024 — what the extended FTC review does to deal risk, how the July 2026 Taiwan Labour Act reshapes platform compliance, and how market signalling and governance discipline protect the valuation through completion. My teammates built the capital budgeting model (FCFF, terminal value, discount rate, NPV, IRR, payback, PI), which returned a +US$484.75M NPV at an 18.14% IRR. The verdict was joint: proceed, conditionally.</p>
+<p style="margin:0 0 12px;color:var(--ink-soft)">Market Entry Strategy · Regulatory &amp; Antitrust Risk · ESG Compliance · Competitive Positioning · Board-Level Recommendation</p>
+<p style="margin:0 0 12px"><a href="grab-appraisal.pdf" style="color:var(--blue)">View the 12-slide deck (PDF)</a></p>
 <h2 style="font-weight:900;text-transform:uppercase;letter-spacing:-0.02em;font-size:28px;margin:52px 0 16px;border-top:4px solid var(--line);padding-top:18px">Experience &amp; Education</h2>
 <h3 style="font-size:19px;font-weight:700;margin:26px 0 6px">Master of Management</h3>
 <p style="margin:0 0 12px;color:var(--ink-soft)">Singapore University of Social Sciences · Singapore · 2025 — Present</p>
@@ -782,6 +787,19 @@ const PROJECTS = [
     body: "Managed intercontinental flight operations at Singapore Airlines, delivering zero-compromise safety compliance and premium service execution across global routes. Directed time-critical crisis management within diverse, cross-cultural crews while cultivating high-value rapport with C-suite travelers. All while sustaining the physical and scheduling demands of long-haul flights across time zones, I simultaneously completed a rigorous part-time Master of Management with a focus on logistics and supply chains — anchoring field-tested composure with advanced operational discipline.",
     tags: ["Crisis Management", "High-Pressure Operations", "SOP Execution", "Executive Engagement", "Cross-Cultural Leadership"],
     metrics: [["4", "continents flown"], ["Time-Management", "client contact"], ["24/7", "shift ops"]],
+  },
+
+  {
+    n: "04",
+    accent: "var(--ground-deep)",
+    on: "var(--ink-invert)",
+    shape: "half",
+    title: "Grab Holdings: US$600M Acquisition Appraisal of foodpanda Taiwan",
+    context: "Graduate coursework · MGT566 Finance for Business Decisions, SUSS · Strategy & risk workstream",
+    body: "A four-person corporate finance team appraised Grab's proposed US$600M acquisition of foodpanda Taiwan and put a formal recommendation to the board. I selected the case and gathered the underlying research, then owned the whole non-financial assessment: why a market entry clears where a horizontal merger did not — the Uber Eats bid the Taiwan FTC blocked in 2024 — what the extended FTC review does to deal risk, how the July 2026 Taiwan Labour Act reshapes platform compliance, and how market signalling and governance discipline protect the valuation through completion. My teammates built the capital budgeting model (FCFF, terminal value, discount rate, NPV, IRR, payback, PI), which returned a +US$484.75M NPV at an 18.14% IRR. The verdict was joint: proceed, conditionally.",
+    tags: ["Market Entry Strategy", "Regulatory & Antitrust Risk", "ESG Compliance", "Competitive Positioning", "Board-Level Recommendation"],
+    metrics: [["US$600M", "deal appraised"], ["4", "person team"], ["Strategy", "my remit"]],
+    link: { href: "grab-appraisal.pdf", label: "View the 12-slide deck" },
   },
 ];
 
@@ -1696,6 +1714,8 @@ function ProjectShape({ kind }) {
     return <span aria-hidden="true" className="bh-shape block h-10 w-10 rounded-full" style={{ border: "3px solid var(--line)" }} />;
   if (kind === "triangle")
     return <span aria-hidden="true" className="bh-shape block h-10 w-10" style={{ clipPath: "polygon(50% 0, 100% 100%, 0 100%)" }} />;
+  if (kind === "half")
+    return <span aria-hidden="true" className="bh-shape block h-10 w-10" style={{ borderRadius: "999px 0 0 999px", border: "3px solid var(--line)" }} />;
   return <span aria-hidden="true" className="bh-shape block h-10 w-10" style={{ border: "3px solid var(--line)" }} />;
 }
 
@@ -1753,6 +1773,22 @@ function ProjectCard({ p }) {
           ))}
         </dl>
 
+        {p.link && (
+          <a
+            href={p.link.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bh-btn mono mt-5 inline-flex items-center justify-between gap-3 border-2 px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.14em] no-underline"
+            style={{
+              "--base": "transparent", "--base-on": "var(--ink)",
+              "--acc": p.accent, "--acc-on": p.on,
+            }}
+          >
+            {p.link.label}
+            <span aria-hidden="true">→</span>
+          </a>
+        )}
+
         <div className="mt-5 flex flex-wrap gap-1.5 pt-4" style={{ borderTop: "1px solid var(--line)" }}>
           {p.tags.map((t) => <Tag key={t} accent={p.accent}>#{t}</Tag>)}
         </div>
@@ -1772,7 +1808,7 @@ function Projects() {
           accent="var(--blue)"
           shape="circle"
         />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
+        <div className="grid grid-cols-1 gap-6 pt-4 md:grid-cols-2">
           {PROJECTS.map((p) => <ProjectCard key={p.n} p={p} />)}
         </div>
       </div>
